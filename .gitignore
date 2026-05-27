@@ -1,0 +1,27 @@
+# Dependencies (there are none, but never commit them anyway)
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Credentials & secrets — NEVER commit these
+*.creds.json
+credentials/
+woolworths-mobile.json
+.env
+.env.*
+
+# Git worktrees (kept inside the repo)
+.worktrees/
+
+# OS / editor cruft
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Scratch
+*.log
+tmp/
+/tmp/

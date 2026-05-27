@@ -1,0 +1,42 @@
+{
+  "name": "woolworths-cli",
+  "version": "1.0.0",
+  "description": "CLI and Node.js client for Woolworths Dash on-demand grocery delivery (South Africa), reverse-engineered from the Android app. Search products, manage your cart, and walk checkout up to 3DS payment.",
+  "keywords": [
+    "woolworths",
+    "woolworths-dash",
+    "dash",
+    "grocery",
+    "delivery",
+    "south-africa",
+    "cli",
+    "wfs"
+  ],
+  "homepage": "https://github.com/yashiels/woolworths-cli#readme",
+  "bugs": {
+    "url": "https://github.com/yashiels/woolworths-cli/issues"
+  },
+  "license": "MIT",
+  "author": "Yashiel Sookdeo <yashiel@skyner.co.za>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yashiels/woolworths-cli.git"
+  },
+  "main": "api-client.js",
+  "bin": {
+    "woolies": "./api-client.js"
+  },
+  "files": [
+    "api-client.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "node --check api-client.js",
+    "test": "node --check api-client.js",
+    "start": "node api-client.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
