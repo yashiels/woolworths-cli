@@ -25,3 +25,4 @@ woolworths-mobile.json
 *.log
 tmp/
 /tmp/
+.worktrees/
