@@ -1,6 +1,5 @@
 # Dependencies (there are none, but never commit them anyway)
 node_modules/
-package-lock.json
 npm-debug.log*
 yarn-error.log*
 
