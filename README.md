@@ -1,80 +1,111 @@
-# woolies — Woolworths Dash grocery delivery from your shell
+# 🛒 woolies
 
-CLI and Node.js client for Woolworths Dash — South Africa's on-demand grocery delivery. Pure Node.js, zero dependencies, speaks the same API the Dash Android app does.
+**Woolworths Dash grocery delivery from your shell.**
 
-- **No dependencies** — pure Node.js standard library
-- **Full checkout flow** — cart, delivery slots, shipping, saved cards; stops before 3DS by design
-- **Auto token refresh** — Cognito IdToken + RefreshToken managed transparently
+<!-- docs/assets/hero.png — add a terminal screenshot here -->
+
+Search the catalogue, manage your cart, book a delivery slot, and walk the full checkout flow right up to the 3DS bank-approval step — all without leaving the terminal. Pure Node.js, zero dependencies, reverse-engineered from the Woolworths Dash Android app (v10.11.0).
 
 ## Install
 
+### Homebrew (macOS & Linux)
+
 ```bash
-brew install yashiels/tap/woolies  # auto-taps yashiels/tap
+brew install yashiels/tap/woolies
 ```
 
-Direct downloads from the [latest GitHub release](https://github.com/yashiels/woolworths-cli/releases/latest).
+The formula auto-taps `yashiels/tap` on first install.
 
-Build from source:
+### Standalone binary
+
+Download the latest pre-built binary from [GitHub Releases](https://github.com/yashiels/woolworths-cli/releases/latest):
+
+| Platform | Binary |
+|----------|--------|
+| macOS (Apple Silicon) | `woolies-macos-arm64.tar.gz` |
+| Linux (x86-64) | `woolies-linux-x64.tar.gz` |
+
+### From source
 
 ```bash
 git clone https://github.com/yashiels/woolworths-cli.git
 cd woolworths-cli
-npm install
+node api-client.js help   # no npm install needed — zero dependencies
 ```
 
 ## Quick Start
 
 ```bash
-woolies login                  # Cognito auth → stores tokens
+# 1. Authenticate once — tokens are saved automatically
+woolies login
+
+# 2. Find something
 woolies search "coconut water"
+
+# 3. Add it to the cart (by query or exact SKU)
 woolies add "full cream milk" 2
+woolies add 6009204330856 1
+
+# 4. Review the cart
 woolies cart
+
+# 5. See available delivery windows
 woolies timeslots
-woolies checkout               # walk to 3DS step (manual bank approval)
+
+# 6. Walk to checkout (stops before the 3DS step — approve on your bank app)
+woolies checkout
 ```
 
 ## Commands
 
-All commands assume the global `woolies` binary. If you're running from source, substitute `node api-client.js`.
-
 ### Search & products
 
 ```bash
-woolies search "coconut water"      # search the catalogue (Constructor.io, no auth)
+woolies search <query>          # search catalogue via Constructor.io (no auth needed)
 ```
 
 ### Cart
 
 ```bash
-woolies cart                        # show cart contents + total
-woolies add "full cream milk" 2     # add by search query (first match), qty 2
-woolies add 6009204330856 3         # add by SKU, qty 3
-woolies remove "milk"               # remove by name substring
-woolies remove ci2115702714         # remove by commerceId
-woolies clear                       # empty the entire cart
-woolies order "brown bread" 1       # quick order: search + add in one step
+woolies cart                    # show cart contents + running total
+woolies add <query|sku> [qty]   # add item by search query or SKU (quantity additive, default 1)
+woolies remove <name|id>        # remove by name substring or commerceId (ci…)
+woolies clear                   # empty the entire cart
+woolies order <query> [qty]     # shortcut: search + add in one command
 ```
 
-### Account & delivery
+> **Heads-up — `add` is additive.** Calling `woolies add "milk" 2` twice puts 4 units in the cart, not 2. Use `woolies remove` first if you need to reset a quantity.
+
+### Delivery
 
 ```bash
-woolies addresses                   # list saved delivery addresses (with placeId/storeId)
-woolies timeslots                   # show available delivery slots for your address
-woolies token                       # show current token state + expiry
-woolies login                       # force a fresh Cognito login
+woolies addresses               # list saved addresses with placeId / storeId
+woolies timeslots               # show available delivery windows for your default address
 ```
 
-### Checkout & orders
+### Checkout
 
 ```bash
-woolies checkout                    # walk checkout to the 3DS payment step (last slot)
-woolies checkout 0                  # ...using slot index 0 (see `timeslots`)
-woolies orders                      # list past orders (best-effort)
+woolies checkout                # walk full checkout using the last available slot
+woolies checkout <index>        # ...or a specific slot (0-indexed from `timeslots`)
+woolies orders                  # list past orders
+```
+
+Checkout stops intentionally one step before submitting 3DS. Approve the push notification on your bank's app, then return to the terminal.
+
+### Auth & diagnostics
+
+```bash
+woolies login                   # force a fresh Cognito login
+woolies token                   # inspect token state and expiry
+woolies help                    # print this command list
 ```
 
 ## Configuration
 
 Credentials file: `~/.openclaw/credentials/woolworths-mobile.json`
+
+Create it once before first login:
 
 ```json
 {
@@ -83,24 +114,51 @@ Credentials file: `~/.openclaw/credentials/woolworths-mobile.json`
 }
 ```
 
-Optional fields: `place_id`, `store_id`, `address_nickname`, `card_id`, `cvv`, `driver_tip`, `api_base`.
+**Optional fields** — omit any you don't need; `woolies` discovers them automatically after the first login:
 
-IDs are discovered automatically after login: `dyn_user_id` from JWT, `place_id` / `store_id` from your default saved address.
+| Field | Default | Description |
+|-------|---------|-------------|
+| `place_id` | auto | Delivery address place ID (discovered from default address) |
+| `store_id` | auto | Associated store ID |
+| `address_nickname` | auto | Address label used for confirmation |
+| `card_id` | — | Default saved card ID for checkout |
+| `cvv` | — | Card CVV (stored locally, never sent to Woolworths) |
+| `driver_tip` | `0` | Driver tip in Rands |
+| `api_base` | WFS default | Override WFS API base URL |
 
-Payment cannot be fully automated — Woolworths uses 3-D Secure, requiring a push notification approval on your bank's app. `checkout` stops one step short intentionally.
+Cognito session and refresh tokens are written back to this file automatically and rotated transparently — you only need to re-run `woolies login` if the refresh token itself expires (typically after several weeks of inactivity).
+
+## How It Works
+
+```
+woolies search  →  Constructor.io public API (no auth)
+woolies add/cart/checkout  →  WFS (Woolworths Fulfilment Service) — Cognito IdToken
+woolies checkout (payment)  →  Woolworths Web API — session cookies from WFS setShipping
+```
+
+1. **Auth** — `woolies login` uses Cognito `USER_PASSWORD_AUTH` to obtain a 24-hour IdToken and a long-lived RefreshToken, both stored in your credentials file. Every subsequent command calls `getSessionToken()`, which silently refreshes when the token is within 60 seconds of expiry.
+
+2. **Product search** — routed through Constructor.io (the same search service the Woolworths app uses) with a public API key. No login needed.
+
+3. **Cart & delivery** — all cart mutations, address lookups, and timeslot booking hit the WFS private API using the same headers the Android app sends (user-agent, APK version, device model).
+
+4. **Checkout** — `setShipping` returns web-layer session cookies; these are used to fetch saved cards via the Woolworths website API. The final place-order call is intentionally not implemented — 3DS (3-D Secure) requires a push notification on your bank's app, so the CLI hands off at that boundary.
+
+5. **Zero dependencies** — everything is implemented with `https`, `crypto`, `fs`, and `path` from the Node.js standard library. The binary builds use [Bun](https://bun.sh)'s `--compile` flag to bundle into a single self-contained executable.
+
+## Releases
+
+Releases are fully automated. Go to **Actions → Ship**, choose `patch`, `minor`, or `major`, and the workflow will:
+
+1. Bump `version.env` and `package.json`
+2. Compile standalone binaries (macOS arm64, Linux x64) via Bun
+3. Create a GitHub Release with SHA-256–verified tarballs
+4. Update the [Homebrew tap](https://github.com/yashiels/homebrew-tap) formula automatically
 
 ## Disclaimer
 
-Not affiliated with Woolworths South Africa. Talks to private, undocumented APIs reverse-engineered from the Woolworths Dash Android app (v10.11.0). Use at your own risk.
-
-## Development
-
-```bash
-npm install     # install dependencies
-```
-
-Releases are automated via GitHub Actions. Go to **Actions → Ship**, pick `patch`, `minor`, or `major` — it bumps the version, builds a standalone binary, publishes a GitHub release, and updates the [Homebrew tap](https://github.com/yashiels/homebrew-tap).
+Not affiliated with Woolworths South Africa. This tool communicates with private, undocumented APIs that were reverse-engineered from the Woolworths Dash Android application. Use at your own risk. The APIs may change at any time without notice.
 
 ## License
 
-MIT — Yashiel Sookdeo
+MIT — © 2026 [Yashiel Sookdeo](https://github.com/yashiels)
