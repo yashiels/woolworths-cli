@@ -33,10 +33,14 @@
   ],
   "scripts": {
     "lint": "node --check api-client.js",
-    "test": "node --check api-client.js",
+    "test": "node test/smoke.test.js",
+    "fmt": "npx prettier --write .",
     "start": "node api-client.js"
   },
   "engines": {
     "node": ">=16"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4"
   }
 }

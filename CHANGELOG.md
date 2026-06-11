@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `AGENTS.md` — agentic development guide with repo structure, build targets, design decisions, and constraints
+- `Makefile` — standard `ci`, `lint`, `test`, `fmt`, `clean` targets
+- `test/smoke.test.js` — smoke tests for syntax check and CLI entrypoint
+- `.prettierrc` — Prettier formatting config (singleQuote, trailingComma all, printWidth 100)
+
+### Changed
+
+- `package.json` scripts: `test` now runs `node test/smoke.test.js`; added `fmt` script
+
 ## [1.0.0] — 2026-06-08
 
 ### Added
