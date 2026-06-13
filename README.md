@@ -2,7 +2,7 @@
 
 **Woolworths Dash grocery delivery from your shell.**
 
-<!-- docs/assets/hero.png — add a terminal screenshot here -->
+![woolies demo](docs/assets/hero.svg)
 
 Search the catalogue, manage your cart, book a delivery slot, and walk the full checkout flow right up to the 3DS bank-approval step — all without leaving the terminal. Pure Node.js, zero dependencies, reverse-engineered from the Woolworths Dash Android app (v10.11.0).
 
