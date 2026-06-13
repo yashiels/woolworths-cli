@@ -72,11 +72,11 @@ jobs:
         run: npm ci
 
       - name: Build macOS arm64 binary
-        run: bun build --compile api-client.js --outfile woolies
+        run: bun build --compile bin/woolies.js --outfile woolies
 
       - name: Build Linux x64 binary
         run: |
-          bun build --compile --target=bun-linux-x64 api-client.js --outfile woolies-linux-x64
+          bun build --compile --target=bun-linux-x64 bin/woolies.js --outfile woolies-linux-x64
           mv woolies-linux-x64 woolies-linux
 
       - name: Create tarballs

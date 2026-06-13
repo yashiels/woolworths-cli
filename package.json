@@ -22,20 +22,21 @@
     "type": "git",
     "url": "git+https://github.com/yashiels/woolworths-cli.git"
   },
-  "main": "api-client.js",
+  "main": "lib/api-client.js",
   "bin": {
-    "woolies": "./api-client.js"
+    "woolies": "./bin/woolies.js"
   },
   "files": [
-    "api-client.js",
+    "bin/",
+    "lib/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "lint": "node --check api-client.js",
+    "lint": "node --check lib/api-client.js && node --check bin/woolies.js",
     "test": "node test/smoke.test.js",
     "fmt": "npx prettier --write .",
-    "start": "node api-client.js"
+    "start": "node bin/woolies.js"
   },
   "engines": {
     "node": ">=16"

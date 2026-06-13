@@ -6,7 +6,11 @@ Woolworths Dash grocery CLI. Pure Node.js, zero dependencies, reverse-engineered
 
 ```
 woolworths-cli/
-├── api-client.js          # CLI entrypoint + WoolworthsDash library class (monolith, root)
+├── bin/
+│   └── woolies.js         # CLI entrypoint (shebang, argument parsing, command routing)
+├── lib/
+│   └── api-client.js      # WoolworthsDash class + all API/auth/HTTP helpers (importable)
+├── api-client.js          # Backward-compat shim → lib/api-client.js (remove in next major)
 ├── package.json
 ├── package-lock.json
 ├── .prettierrc
@@ -30,7 +34,7 @@ woolworths-cli/
 
 ```bash
 make ci        # lint + test (the standard gate before any commit)
-make lint      # node --check api-client.js
+make lint      # node --check lib/api-client.js && node --check bin/woolies.js
 make test      # node test/smoke.test.js
 make fmt       # npx prettier --write .
 make clean     # no-op (no compiled artifacts)
@@ -43,8 +47,8 @@ All commands are also available via `npm run <name>`.
 - **Zero runtime dependencies** — standard-library only (`https`, `fs`, `path`, `crypto`). No axios, no node-fetch, no commander.
 - **Full checkout flow (stops before 3DS)** — `woolies checkout` walks slot selection, shipping auth, and card listing, then stops with instructions. 3DS bank-app approval is intentionally not automated.
 - **Android app reverse-engineering** — API endpoints, headers, and the `sha1password` constant were extracted from Woolworths Dash Android v10.11.0 via MITM + APK inspection.
-- **Session caching** — Cognito tokens (IdToken + RefreshToken) are written to `~/.woolworths-session.json`. `TokenManager` auto-refreshes on expiry.
-- **Dual-use module** — `api-client.js` exports `WoolworthsDash` for programmatic use and also drives the CLI when run directly.
+- **Session caching** — Cognito tokens (IdToken + RefreshToken) are written to `~/.openclaw/credentials/woolworths-mobile.json`. `TokenManager` auto-refreshes on expiry.
+- **Split bin/lib layout** — `lib/api-client.js` exports `WoolworthsDash` for programmatic use; `bin/woolies.js` is the CLI entrypoint. A root `api-client.js` shim preserves backward compatibility for old `require('woolworths-cli')` callers.
 
 ## CLI Commands
 
@@ -70,7 +74,7 @@ Pass `--json` to most commands for machine-readable output.
 - **No npm runtime deps** — do not introduce runtime dependencies. Dev-only tooling (prettier, etc.) is fine.
 - **Do not complete 3DS programmatically** — the checkout flow must stop before any bank-app interaction.
 - **Keep `--json` output stable** — downstream tools rely on the JSON shape; breaking changes require a semver bump and CHANGELOG entry.
-- **`api-client.js` is at root** — a restructure into `bin/` + `lib/` is planned separately (see GitHub issue). Do not move files in this PR/branch.
+- **bin/lib split is the canonical layout** — `lib/api-client.js` is the importable module; `bin/woolies.js` is the CLI. The root shim is for backward compat only and will be removed in the next major version.
 - **Node ≥ 16** — the engines field is `"node": ">=16"`. Do not use Node APIs unavailable on 16.
 
 ## CI
@@ -79,6 +83,6 @@ Workflows live in `.github/workflows/`:
 
 - `ci.yml` — runs on push/PR; executes `make ci`
 - `ship.yml` — release pipeline (version bump → binaries → GitHub Release → Homebrew tap)
-- `release-impl.yml` — implementation detail for the release pipeline
+- `release-impl.yml` — implementation detail for the release pipeline; Bun compiles `bin/woolies.js`
 
 Run locally: `make ci`
