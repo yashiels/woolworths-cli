@@ -10,6 +10,8 @@ woolworths-cli/
 │   └── woolies.js         # CLI entrypoint (shebang, argument parsing, command routing)
 ├── lib/
 │   └── api-client.js      # WoolworthsDash class + all API/auth/HTTP helpers (importable)
+├── skill/
+│   └── SKILL.md           # OpenClaw skill wrapper (documents the installed woolies binary)
 ├── api-client.js          # Backward-compat shim → lib/api-client.js (remove in next major)
 ├── package.json
 ├── package-lock.json
