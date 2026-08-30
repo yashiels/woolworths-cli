@@ -40,9 +40,9 @@ async function main() {
       console.log(`Searching: "${query}"`);
       const results = await client.searchProducts(query);
       if (!results.length) { console.log('No results found.'); break; }
-      console.log(`\n  ${pad('#', 3)}${pad('Product', 42)}${pad('Price', 10)}SKU`);
+      console.log(`\n  ${pad('#', 3)}${pad('Product', 42)}${pad('Price', 10)}${pad('SKU', 12)}Link`);
       results.forEach((p, i) => {
-        console.log(`  ${pad(i + 1, 3)}${pad(p.name, 42)}${pad(fmtR(p.price), 10)}${p.sku}`);
+        console.log(`  ${pad(i + 1, 3)}${pad(p.name, 42)}${pad(fmtR(p.price), 10)}${pad(p.sku, 12)}${p.url || ''}`);
       });
       break;
     }
@@ -78,7 +78,7 @@ async function main() {
         if (!results.length) { console.log(`No results for "${target}"`); break; }
         sku = results[0].sku;
         name = results[0].name;
-        console.log(`Found: ${name}${results[0].price != null ? ' — ' + fmtR(results[0].price) : ''}`);
+        console.log(`Found: ${name}${results[0].price != null ? ' — ' + fmtR(results[0].price) : ''}${results[0].url ? '  ' + results[0].url : ''}`);
       }
 
       await client.addItems([{ sku, quantity: qty }]);
@@ -130,7 +130,7 @@ async function main() {
       const results = await client.searchProducts(q, { limit: 5 });
       if (!results.length) { console.log(`No results for "${q}"`); break; }
       const pick = results[0];
-      console.log(`Found: ${pick.name}${pick.price != null ? ' — ' + fmtR(pick.price) : ''}`);
+      console.log(`Found: ${pick.name}${pick.price != null ? ' — ' + fmtR(pick.price) : ''}${pick.url ? '  ' + pick.url : ''}`);
       await client.addItems([{ sku: pick.sku, quantity }]);
       const cart = await client.getCart();
       console.log(`✅ Added x${quantity}. Cart: ${cart.count} item(s)${cart.total != null ? ', ' + fmtR(cart.total) : ''}.`);
