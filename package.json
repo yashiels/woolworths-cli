@@ -1,6 +1,6 @@
 {
   "name": "woolworths-cli",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "CLI and Node.js client for Woolworths Dash on-demand grocery delivery (South Africa), reverse-engineered from the Android app. Search products, manage your cart, and walk checkout up to 3DS payment.",
   "keywords": [
     "woolworths",
