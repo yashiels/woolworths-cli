@@ -26,6 +26,13 @@ const PROG = (() => {
   return base && base !== 'api-client.js' ? base.replace(/\.js$/, '') : 'woolies';
 })();
 
+// Baked in at compile time for the standalone binaries (`bun build --define`),
+// which can't read package.json at runtime. The require() below is authoritative
+// for the npm/node install, where package.json ships alongside bin/.
+let VERSION =
+  typeof __WOOLIES_VERSION__ === 'string' && __WOOLIES_VERSION__ ? __WOOLIES_VERSION__ : '0.1.0';
+try { VERSION = require('../package.json').version || VERSION; } catch {}
+
 function isSku(s) { return /^\d{5,}$/.test(s); }
 function isCommerceId(s) { return /^ci\d+$/i.test(s); }
 
@@ -226,6 +233,12 @@ async function main() {
       break;
     }
 
+    case 'version':
+    case '--version':
+    case '-v':
+      console.log(VERSION);
+      break;
+
     case 'help':
     case '--help':
     case '-h':
@@ -256,6 +269,9 @@ Account:
 Checkout & orders:
   checkout [slotIndex]        Walk checkout up to 3DS (then approve on your bank app)
   orders                      List past orders (best-effort)
+
+Other:
+  version                     Print the CLI version
 
 Credentials: ${CONFIG.CREDS_PATH}
 `);
