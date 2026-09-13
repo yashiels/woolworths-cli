@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "projectType": "node",
+  "targets": [
+    {
+      "name": "tests",
+      "type": "test",
+      "enabled": true,
+      "testCommand": "node test/smoke.test.js",
+      "watchPaths": ["bin/**/*.js", "lib/**/*.js", "test/**/*.js"]
+    }
+  ]
+}
