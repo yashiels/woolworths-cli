@@ -27,3 +27,4 @@ tmp/
 /tmp/
 .worktrees/
 .worktrees
+.*.bun-build
